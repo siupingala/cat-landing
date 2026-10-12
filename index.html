@@ -1,80 +1,32 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cat Test</title>
+  <title>Cat Simple</title>
   <style>
-    body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: white;
-      font-family: system-ui, sans-serif;
-    }
-    #cat-img {
-      width: 380px;
-      height: 560px;
-      object-fit: contain;
-    }
-    #status {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 8px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-    }
+    body { margin:0; display:flex; justify-content:center; align-items:center; height:100vh; background:white; }
+    img { width:380px; height:560px; object-fit:contain; }
+    #s { position:absolute; bottom:20px; background:#333; color:white; padding:8px 16px; border-radius:12px; }
   </style>
 </head>
 <body>
-  <img id="cat-img" src="frames_high/f_0001.jpg" alt="Cat">
-  <div id="status">測試中</div>
-
+  <img id="c" src="https://raw.githubusercontent.com/siupingala/cat-landing/main/frames_high/f_0001.jpg">
+  <div id="s">載入中</div>
   <script>
-    const catImg = document.getElementById("cat-img");
-    const status = document.getElementById("status");
-
-    const sitting = "frames_high/f_0001.jpg";
-    const action = [
-      "frames_high/f_0030.jpg",
-      "frames_high/f_0035.jpg",
-      "frames_high/f_0040.jpg",
-      "frames_high/f_0045.jpg",
-      "frames_high/f_0050.jpg"
+    const imgs = [
+      "https://raw.githubusercontent.com/siupingala/cat-landing/main/frames_high/f_0001.jpg",
+      "https://raw.githubusercontent.com/siupingala/cat-landing/main/frames_high/f_0030.jpg",
+      "https://raw.githubusercontent.com/siupingala/cat-landing/main/frames_high/f_0035.jpg",
+      "https://raw.githubusercontent.com/siupingala/cat-landing/main/frames_high/f_0040.jpg"
     ];
-
-    let idx = 0;
-    let playing = false;
-
-    function play() {
-      playing = true;
-      idx = 0;
-      status.textContent = "播動作";
-    }
-
-    function tick() {
-      if (playing) {
-        if (idx < action.length) {
-          catImg.src = action[idx];
-          status.textContent = "幀 " + (idx + 1);
-          idx++;
-        } else {
-          playing = false;
-          catImg.src = sitting;
-          status.textContent = "坐住";
-          setTimeout(play, 1500);
-        }
-      }
-    }
-
-    setInterval(tick, 200);
-    setTimeout(play, 1000);
+    let i = 0;
+    const img = document.getElementById("c");
+    const s = document.getElementById("s");
+    setInterval(() => {
+      i = (i + 1) % imgs.length;
+      img.src = imgs[i] + "?t=" + Date.now();
+      s.textContent = "幀 " + (i+1);
+    }, 400);
   </script>
 </body>
 </html>
