@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cat</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: white;
+      font-family: system-ui, sans-serif;
+    }
+    #cat-img {
+      width: 380px;
+      height: 560px;
+      object-fit: contain;
+    }
+    #status {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 16px;
+      font-size: 13px;
+    }
+    video { display: none; }
+  </style>
+</head>
+<body>
+  <img id="cat-img" src="frames_high/f_0001.jpg" alt="Cat">
+  <div id="status">允許鏡頭</div>
+  <video id="webcam" autoplay playsinline></video>
+
+  <script type="module">
+    import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+    const catImg = document.getElementById("cat-img");
+    const status = document.getElementById("status");
+    const video = document.getElementById("webcam");
+
+    const sitting = "frames_high/f_0001.jpg";
+    const actions = [
+      Array.from({length: 20}, (_, i) => `frames_high/f_${String(i+30).padStart(4,'0')}.jpg`),
+      Array.from({length: 20}, (_, i) => `frames_high/f_${String(i+70).padStart(4,'0')}.jpg`),
+      Array.from({length: 20}, (_, i) => `frames_high/f_${String(i+110).padStart(4,'0')}.jpg`)
+    ];
+
+    let faceLandmarker;
+    let playing = false;
+    let frames = [];
+    let idx = 0;
+    let lostCount = 0;
+
+    async function init() {
+      const filesetResolver = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+      );
+      faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numFaces: 1
+      });
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.onloadeddata = () => {
+          status.textContent = "就緒";
+          loop();
+        };
+      } catch (e) {
+        status.textContent = "無鏡頭";
+      }
+    }
+
+    function playAction() {
+      frames = actions[Math.floor(Math.random() * actions.length)];
+      idx = 0;
+      playing = true;
+      status.textContent = "動作";
+    }
+
+    function loop() {
+      if (playing) {
+        catImg.src = frames[idx];
+        idx++;
+        if (idx >= frames.length) {
+          playing = false;
+          catImg.src = sitting;
+          status.textContent = "坐住";
+        }
+      } else {
+        catImg.src = sitting;
+      }
+
+      if (video.readyState >= 2 && !playing) {
+        const results = faceLandmarker.detectForVideo(video, performance.now());
+        if (results.faceLandmarks?.length) {
+          status.textContent = "偵測到臉";
+          lostCount = 0;
+        } else {
+          lostCount++;
+          status.textContent = `scan唔到眼 ${lostCount}`;
+          if (lostCount > 10) {
+            playAction();
+            lostCount = 0;
+          }
+        }
+      }
+      setTimeout(() => requestAnimationFrame(loop), 50);
+    }
+
+    init();
+  </script>
+</body>
+</html>
