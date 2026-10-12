@@ -49,7 +49,9 @@
     const actions = [
       ["frames_high/f_0030.jpg","frames_high/f_0035.jpg","frames_high/f_0040.jpg","frames_high/f_0045.jpg","frames_high/f_0050.jpg"],
       ["frames_high/f_0055.jpg","frames_high/f_0060.jpg","frames_high/f_0065.jpg","frames_high/f_0070.jpg","frames_high/f_0075.jpg"],
-      ["frames_high/f_0080.jpg","frames_high/f_0085.jpg","frames_high/f_0090.jpg","frames_high/f_0095.jpg","frames_high/f_0100.jpg"]
+      ["frames_high/f_0080.jpg","frames_high/f_0085.jpg","frames_high/f_0090.jpg","frames_high/f_0095.jpg","frames_high/f_0100.jpg"],
+      ["frames_high/f_0040.jpg","frames_high/f_0060.jpg","frames_high/f_0080.jpg","frames_high/f_0100.jpg","frames_high/f_0110.jpg"],
+      ["frames_high/f_0035.jpg","frames_high/f_0055.jpg","frames_high/f_0075.jpg","frames_high/f_0095.jpg","frames_high/f_0105.jpg"]
     ];
 
     let faceLandmarker;
@@ -87,7 +89,7 @@
       frames = actions[Math.floor(Math.random() * actions.length)];
       idx = 0;
       playing = true;
-      status.textContent = "動作";
+      status.textContent = "動作 " + (actions.indexOf(frames)+1);
     }
 
     function loop() {
@@ -118,7 +120,7 @@
           }
         }
       }
-      setTimeout(() => requestAnimationFrame(loop), 180);
+      setTimeout(() => requestAnimationFrame(loop), 160);
     }
 
     init();
