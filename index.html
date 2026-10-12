@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cat</title>
+  <title>Cat Test</title>
   <style>
     body {
       margin: 0;
@@ -21,7 +21,7 @@
     }
     #status {
       position: absolute;
-      bottom: 60px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(0,0,0,0.7);
@@ -30,110 +30,51 @@
       border-radius: 16px;
       font-size: 14px;
     }
-    #btn {
-      position: absolute;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 8px 20px;
-      border: none;
-      border-radius: 20px;
-      background: #333;
-      color: white;
-      cursor: pointer;
-    }
-    video { display: none; }
   </style>
 </head>
 <body>
   <img id="cat-img" src="frames_high/f_0001.jpg" alt="Cat">
-  <div id="status">允許鏡頭</div>
-  <button id="btn">手動播動作</button>
-  <video id="webcam" autoplay playsinline></video>
+  <div id="status">測試中</div>
 
-  <script type="module">
-    import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
-
+  <script>
     const catImg = document.getElementById("cat-img");
     const status = document.getElementById("status");
-    const video = document.getElementById("webcam");
 
     const sitting = "frames_high/f_0001.jpg";
-    const actions = [
-      ["frames_high/f_0030.jpg","frames_high/f_0035.jpg","frames_high/f_0040.jpg","frames_high/f_0045.jpg","frames_high/f_0050.jpg"],
-      ["frames_high/f_0055.jpg","frames_high/f_0060.jpg","frames_high/f_0065.jpg","frames_high/f_0070.jpg","frames_high/f_0075.jpg"],
-      ["frames_high/f_0080.jpg","frames_high/f_0085.jpg","frames_high/f_0090.jpg","frames_high/f_0095.jpg","frames_high/f_0100.jpg"]
+    const action = [
+      "frames_high/f_0030.jpg",
+      "frames_high/f_0035.jpg",
+      "frames_high/f_0040.jpg",
+      "frames_high/f_0045.jpg",
+      "frames_high/f_0050.jpg"
     ];
 
-    let faceLandmarker;
-    let playing = false;
-    let frames = [];
     let idx = 0;
-    let lostCount = 0;
+    let playing = false;
 
-    async function init() {
-      const filesetResolver = await FilesetResolver.forVisionTasks(
-        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
-      );
-      faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
-        baseOptions: {
-          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-          delegate: "GPU"
-        },
-        runningMode: "VIDEO",
-        numFaces: 1
-      });
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-        video.onloadeddata = () => {
-          status.textContent = "就緒";
-          loop();
-        };
-      } catch (e) {
-        status.textContent = "無鏡頭";
-      }
-    }
-
-    function playAction() {
-      frames = actions[Math.floor(Math.random() * actions.length)];
-      idx = 0;
+    function play() {
       playing = true;
-      status.textContent = "動作中";
+      idx = 0;
+      status.textContent = "播動作";
     }
 
-    function loop() {
+    function tick() {
       if (playing) {
-        if (idx < frames.length) {
-          catImg.src = frames[idx] + "?t=" + Date.now();
+        if (idx < action.length) {
+          catImg.src = action[idx];
+          status.textContent = "幀 " + (idx + 1);
           idx++;
         } else {
           playing = false;
           catImg.src = sitting;
           status.textContent = "坐住";
+          setTimeout(play, 1500);
         }
       }
-
-      if (video.readyState >= 2 && !playing) {
-        const results = faceLandmarker.detectForVideo(video, performance.now());
-        if (results.faceLandmarks?.length) {
-          status.textContent = "偵測到臉";
-          lostCount = 0;
-        } else {
-          lostCount++;
-          status.textContent = "scan唔到 " + lostCount;
-          if (lostCount > 5) {
-            playAction();
-            lostCount = 0;
-          }
-        }
-      }
-      setTimeout(() => requestAnimationFrame(loop), 200);
     }
 
-    document.getElementById("btn").onclick = playAction;
-    init();
+    setInterval(tick, 200);
+    setTimeout(play, 1000);
   </script>
 </body>
 </html>
