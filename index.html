@@ -21,14 +21,26 @@
     }
     #status {
       position: absolute;
-      bottom: 20px;
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.7);
       color: white;
-      padding: 6px 14px;
+      padding: 8px 16px;
       border-radius: 16px;
-      font-size: 13px;
+      font-size: 14px;
+    }
+    #btn {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 18px;
+      border: none;
+      border-radius: 20px;
+      background: #222;
+      color: white;
+      cursor: pointer;
     }
     video { display: none; }
   </style>
@@ -36,6 +48,7 @@
 <body>
   <img id="cat-img" src="frames_high/f_0001.jpg" alt="Cat">
   <div id="status">允許鏡頭</div>
+  <button id="btn">手動播</button>
   <video id="webcam" autoplay playsinline></video>
 
   <script type="module">
@@ -89,7 +102,7 @@
       frames = actions[Math.floor(Math.random() * actions.length)];
       idx = 0;
       playing = true;
-      status.textContent = "動作 " + (actions.indexOf(frames)+1);
+      status.textContent = "動作";
     }
 
     function loop() {
@@ -102,27 +115,26 @@
           catImg.src = sitting;
           status.textContent = "坐住";
         }
-      } else {
-        catImg.src = sitting;
       }
 
       if (video.readyState >= 2 && !playing) {
         const results = faceLandmarker.detectForVideo(video, performance.now());
-        if (results.faceLandmarks?.length) {
-          status.textContent = "偵測到臉";
+        if (results.faceLandmarks && results.faceLandmarks.length > 0) {
+          status.textContent = "有臉";
           lostCount = 0;
         } else {
           lostCount++;
-          status.textContent = "scan唔到 " + lostCount;
-          if (lostCount > 8) {
+          status.textContent = "唔到臉 " + lostCount;
+          if (lostCount >= 4) {
             playAction();
             lostCount = 0;
           }
         }
       }
-      setTimeout(() => requestAnimationFrame(loop), 160);
+      setTimeout(() => requestAnimationFrame(loop), 150);
     }
 
+    document.getElementById("btn").onclick = playAction;
     init();
   </script>
 </body>
